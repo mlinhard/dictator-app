@@ -1,24 +1,5 @@
 #!/bin/bash
 
-app_version=`git describe --tags`
-
-pushd app
-mvn versions:set -DnewVersion=${app_version}
-mvn clean package -DskipTests
-mvn versions:revert
-popd
-
-rm -rf docker/target
-mkdir docker/target
-mv app/target/dictator-app-${app_version}.war docker/target/dictator-app.war
-
-image_tag=docker.io/mlinhard/dictator-app:${app_version}
-
-pushd docker
-docker build -t ${image_tag} .
-popd
-
-echo "Built image: ${image_tag}"
-
-
+./build-maven.sh
+./build-docker.sh
 
