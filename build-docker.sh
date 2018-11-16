@@ -6,7 +6,7 @@ rm -rf docker/target
 mkdir docker/target
 cp app/target/dictator-app-${app_version}.war docker/target/dictator-app.war
 
-image_tag=docker.io/mlinhard/dictator-app:${app_version}
+image_tag=${image_prefix}dictator-app:${app_version}
 
 pushd docker
 docker build -t ${image_tag} .
