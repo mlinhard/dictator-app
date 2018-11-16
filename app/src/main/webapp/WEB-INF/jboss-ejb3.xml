@@ -9,5 +9,9 @@
             <ejb-name>CensorshipService</ejb-name>
             <mdb:resource-adapter-name>dictator-activemq</mdb:resource-adapter-name>
         </mdb:resource-adapter-binding>
+        <mdb:resource-adapter-binding>
+            <ejb-name>PublishingService</ejb-name>
+            <mdb:resource-adapter-name>dictator-activemq</mdb:resource-adapter-name>
+        </mdb:resource-adapter-binding>
     </assembly-descriptor>
 </jboss:ejb-jar>

@@ -17,6 +17,7 @@ batch
 # Create Topics / Queues
 #/subsystem=messaging-activemq/server=default/jms-topic=XXXXXTopic:add(entries=[java:jboss/jms/topic/XXXXXTopic])
 /subsystem=messaging-activemq/server=default/jms-queue=ArticleSubmissions:add(entries=[java:jboss/jms/queue/ArticleSubmissions])
+/subsystem=messaging-activemq/server=default/jms-queue=PublishedArticles:add(entries=[java:jboss/jms/queue/PublishedArticles])
 
 run-batch
 

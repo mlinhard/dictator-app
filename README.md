@@ -14,6 +14,7 @@ docker run -it -p 8080:8080 --network host \
     -e ACTIVEMQ_PORT=61616 \
     -e ACTIVEMQ_USER=dictator \
     -e ACTIVEMQ_PASSWORD=ourleader \
+    -e CENSORSHIP_DURATION=3000 \
     docker.io/mlinhard/dictator-app:`git describe --tags`
 ```
 
