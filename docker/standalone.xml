@@ -394,9 +394,12 @@
         <subsystem xmlns="urn:jboss:domain:messaging-activemq:4.0">
             <server name="default">
                 <remote-connector name="dictator-activemq" socket-binding="dictator-activemq"/>
+                <address-setting name="#" dead-letter-address="jms.queue.DLQ" expiry-address="jms.queue.ExpiryQueue" max-size-bytes="10485760" page-size-bytes="2097152" message-counter-history-day-limit="10"/>
+                <jms-queue name="ExpiryQueue" entries="java:/jms/queue/ExpiryQueue"/>
+                <jms-queue name="DLQ" entries="java:/jms/queue/DLQ"/>
                 <jms-queue name="ArticleSubmissions" entries="java:jboss/jms/queue/ArticleSubmissions"/>
                 <jms-queue name="PublishedArticles" entries="java:jboss/jms/queue/PublishedArticles"/>
-                <pooled-connection-factory name="dictator-activemq" entries="java:/jms/dictator-activemq java:jboss/dictator-activemq" connectors="dictator-activemq" transaction="xa" 
+                <pooled-connection-factory name="dictator-activemq" entries="java:/jms/dictator-activemq java:jboss/dictator-activemq" connectors="dictator-activemq"
                     user="${env.ACTIVEMQ_USER}" password="${env.ACTIVEMQ_PASSWORD}"/>
             </server>
         </subsystem>
