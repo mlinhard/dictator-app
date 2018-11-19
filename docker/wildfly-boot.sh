@@ -12,3 +12,5 @@ sed -i "s/\${ACTIVEMQ_PASSWORD}/${ACTIVEMQ_PASSWORD}/g" /opt/dictator/addons.cli
 echo "Starting Dictator WildFly Image"
 
 /opt/jboss/wildfly/bin/standalone.sh -b 0.0.0.0
+
+echo "standalone.sh exited with code $?"

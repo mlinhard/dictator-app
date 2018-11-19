@@ -15,7 +15,7 @@ docker run -it -p 8080:8080 --network host \
     -e ACTIVEMQ_USER=dictator \
     -e ACTIVEMQ_PASSWORD=ourleader \
     -e CENSORSHIP_DURATION=3000 \
-    docker.io/mlinhard/dictator-app:`git describe --tags`
+    dictator-app:`git describe --tags`
 ```
 
 ## API Access
@@ -45,8 +45,8 @@ docker run -it --rm \
   -p 61616:61616 \
   -e ARTEMIS_USERNAME=dictator \
   -e ARTEMIS_PASSWORD=ourleader \
-  -v /home/mlinhard/Downloads/artemis1:/var/lib/artemis/data:rw,z \
-  docker.io/mlinhard/dictator-activemq:`git describe --tags`
+  -v ${ARTEMIS_DATA_DIR}:/var/lib/artemis/data:rw,z \
+  dictator-activemq:`git describe --tags`
 ```
 
 
