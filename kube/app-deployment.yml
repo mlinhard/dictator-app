@@ -1,0 +1,60 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: dictator-app-${APP_VERSION}
+  labels:
+    app: dictator-app
+    version: "${APP_VERSION}"
+spec:
+  template:
+    metadata:
+      labels:
+        app: dictator-app
+        version: "${APP_VERSION}"
+    spec:
+      containers:
+        - name: dictator-app
+          image: ${GCR_PREFIX}/dictator-app:${APP_VERSION}
+          ports:
+            - name: http
+              containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /api/news/article
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /api/news/article
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 20
+          resources:
+            requests:
+              memory: "768Mi"
+          env:
+            - name: ACTIVEMQ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: dictator-mq-credentials
+                  key: username
+            - name: ACTIVEMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dictator-mq-credentials
+                  key: password
+            - name: ACTIVEMQ_HOST
+              value: ${MQ_NAME}
+            - name: ACTIVEMQ_PORT
+              value: "61616"
+            - name: CENSORSHIP_DURATION
+              value: "3000"
+            - name: APP_VERSION
+              value: ${APP_VERSION}
+            - name: JAVA_OPTS
+              value: "-Xms64m -Xmx512m -XX:MetaspaceSize=64M -XX:MaxMetaspaceSize=128M -Djava.net.preferIPv4Stack=true -Djava.awt.headless=true -Dactivemq.artemis.client.global.thread.pool.max.size=16"

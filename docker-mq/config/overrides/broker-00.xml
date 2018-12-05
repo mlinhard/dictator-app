@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<configuration xmlns="urn:activemq" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:activemq /schema/artemis-configuration.xsd">
+
+    <core xmlns="urn:activemq:core" xsi:schemaLocation="urn:activemq:core ">
+        <management-address>activemq.management</management-address>
+
+        <security-settings>
+            <security-setting match="jms.queue.activemq.management">
+                <permission type="manage" roles="admin" />
+            </security-setting>
+        </security-settings>
+
+        <connectors>
+            <connector name="blue-green-bridge">tcp://${bg.bridge.host}:${bg.bridge.port}</connector>
+        </connectors>
+    </core>
+
+    <jms xmlns="urn:activemq:jms">
+        <queue name="jms.queue.ArticleSubmissions" />
+        <queue name="jms.queue.PublishedArticles" />
+    </jms>
+
+</configuration>

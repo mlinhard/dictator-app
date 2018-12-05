@@ -1,0 +1,40 @@
+#!/bin/bash
+
+source bin/commons.sh
+
+check_def ARTEMIS_DATA_DIR
+check_def ARTEMIS_USERNAME
+check_def ARTEMIS_PASSWORD
+
+ARTEMIS_PORT=${1:-61616}
+ARTEMIS_ADMIN_PORT=${2:-8161}
+ARTEMIS_HORNETQ_PORT=${3:-5445}
+ARTEMIS_AMQP_PORT=${4:-5672}
+ARTEMIS_MQTT_PORT=${5:-1883}
+ARTEMIS_STOMP_PORT=${6:-61613}
+
+ARTEMIS_OTHER_HOST=${7:-localhost}
+ARTEMIS_OTHER_PORT=${8:-61617}
+
+echo "Running ArtemisMQ on localhost:${ARTEMIS_PORT}, bridged to ${ARTEMIS_OTHER_HOST}:${ARTEMIS_OTHER_PORT}"
+
+echo "PORTS:  -p ${ARTEMIS_ADMIN_PORT}:8161 \
+  -p ${ARTEMIS_PORT}:61616 \
+  -p ${ARTEMIS_HORNETQ_PORT}:5445 \
+  -p ${ARTEMIS_AMQP_PORT}:5672 \
+  -p ${ARTEMIS_MQTT_PORT}:1883 \
+  -p ${ARTEMIS_STOMP_PORT}:61613"
+
+docker run -it --rm --network bridge \
+  -p ${ARTEMIS_ADMIN_PORT}:8161 \
+  -p ${ARTEMIS_PORT}:61616 \
+  -p ${ARTEMIS_HORNETQ_PORT}:5445 \
+  -p ${ARTEMIS_AMQP_PORT}:5672 \
+  -p ${ARTEMIS_MQTT_PORT}:1883 \
+  -p ${ARTEMIS_STOMP_PORT}:61613 \
+  -e ARTEMIS_USERNAME=${ARTEMIS_USERNAME} \
+  -e ARTEMIS_PASSWORD=${ARTEMIS_PASSWORD} \
+  -e JAVA_OPTS="-Dbg.bridge.host=${ARTEMIS_OTHER_HOST} -Dbg.bridge.port=${ARTEMIS_OTHER_PORT}" \
+  -v ${ARTEMIS_DATA_DIR}:/var/lib/artemis/data:rw,z \
+  ${GCR_PREFIX}/dictator-activemq:${APP_VERSION}
+

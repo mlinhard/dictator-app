@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: learning-ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-named: learning-ip
+spec:
+  tls:
+  - secretName: learning-tls
+  rules:
+  - host: dictator-app.${APP_DOMAIN}
+    http:
+      paths:
+      - backend:
+          serviceName: dictator-app
+          servicePort: 8080
+  - host: dictator-app-candidate.${APP_DOMAIN}
+    http:
+      paths:
+      - backend:
+          serviceName: dictator-app-candidate
+          servicePort: 8080
+  - host: dictator-mq-b.${APP_DOMAIN}
+    http:
+      paths:
+      - backend:
+          serviceName: dictator-mq-b
+          servicePort: 8161
+  - host: dictator-mq-g.${APP_DOMAIN}
+    http:
+      paths:
+      - backend:
+          serviceName: dictator-mq-g
+          servicePort: 8161
+

@@ -30,26 +30,22 @@ Run `build-activemq.sh` to create a docker image `dictator-activemq:<version>`
 ### Running ActiveMQ server
 
 ```
-docker run -it --rm \
-  -p 8161:8161 \
-  -p 61616:61616 \
-  -e ARTEMIS_USERNAME=dictator \
-  -e ARTEMIS_PASSWORD=ourleader \
-  -v ${ARTEMIS_DATA_DIR}:/var/lib/artemis/data:rw,z \
-  dictator-activemq:`git describe --tags`
+export ARTEMIS_DATA_DIR=/home/mlinhard/Downloads/artemis1
+bin/run-docker-mq.sh 61616 8161 5445 5672 1883 61613 172.17.0.3 61617
+export ARTEMIS_DATA_DIR=/home/mlinhard/Downloads/artemis2
+bin/run-docker-mq.sh 61617 8162 5446 5673 1884 61618 172.17.0.2 61616
 ```
+
+NOTE: assign target IPs based on your docker env
 
 ### Running the app
 
 ```
-docker run -it -p 8080:8080 --network host \
-    -e ACTIVEMQ_HOST=localhost \
-    -e ACTIVEMQ_PORT=61616 \
-    -e ACTIVEMQ_USER=dictator \
-    -e ACTIVEMQ_PASSWORD=ourleader \
-    -e CENSORSHIP_DURATION=3000 \
-    dictator-app:`git describe --tags`
+bin/run-docker-app.sh 8080 172.17.0.2 61616
+bin/run-docker-app.sh 8081 172.17.0.3 61617
 ```
+
+NOTE: assign target IPs based on your docker env
 
 ## API Access
 

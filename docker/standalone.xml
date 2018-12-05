@@ -100,6 +100,9 @@
                     <named-formatter name="PATTERN"/>
                 </formatter>
             </console-handler>
+            <logger category="com.dnastack">
+                <level name="INFO"/>
+            </logger>
             <logger category="com.arjuna">
                 <level name="WARN"/>
             </logger>
@@ -186,7 +189,7 @@
             </mdb>
             <pools>
                 <bean-instance-pools>
-                    <strict-max-pool name="mdb-strict-max-pool" derive-size="from-cpu-count" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
+                    <strict-max-pool name="mdb-strict-max-pool" max-pool-size="2" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
                     <strict-max-pool name="slsb-strict-max-pool" derive-size="from-worker-pools" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
                 </bean-instance-pools>
             </pools>
@@ -392,16 +395,11 @@
             </mail-session>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:messaging-activemq:4.0">
-            <server name="default">
-                <remote-connector name="dictator-activemq" socket-binding="dictator-activemq"/>
-                <address-setting name="#" dead-letter-address="jms.queue.DLQ" expiry-address="jms.queue.ExpiryQueue" max-size-bytes="10485760" page-size-bytes="2097152" message-counter-history-day-limit="10"/>
-                <jms-queue name="ExpiryQueue" entries="java:/jms/queue/ExpiryQueue"/>
-                <jms-queue name="DLQ" entries="java:/jms/queue/DLQ"/>
-                <jms-queue name="ArticleSubmissions" entries="java:jboss/jms/queue/ArticleSubmissions"/>
-                <jms-queue name="PublishedArticles" entries="java:jboss/jms/queue/PublishedArticles"/>
-                <pooled-connection-factory name="dictator-activemq" entries="java:/jms/dictator-activemq java:jboss/dictator-activemq" connectors="dictator-activemq"
-                    user="${env.ACTIVEMQ_USER}" password="${env.ACTIVEMQ_PASSWORD}"/>
-            </server>
+            <remote-connector name="dictator-activemq" socket-binding="dictator-activemq"/>
+            <pooled-connection-factory name="dictator-activemq" entries="java:/jms/dictator-activemq java:jboss/dictator-activemq" connectors="dictator-activemq"
+                user="${env.ACTIVEMQ_USER}" password="${env.ACTIVEMQ_PASSWORD}" max-pool-size="4" min-pool-size="2"/>
+            <external-jms-queue name="ArticleSubmissions" entries="java:jboss/jms/queue/ArticleSubmissions"/>
+            <external-jms-queue name="PublishedArticles" entries="java:jboss/jms/queue/PublishedArticles"/>
         </subsystem>
         <subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0"/>
         <subsystem xmlns="urn:wildfly:microprofile-health-smallrye:1.0" security-enabled="false"/>

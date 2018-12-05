@@ -11,6 +11,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Configuration;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -29,19 +31,33 @@ public class NewsEndpoint {
     @Resource(lookup = "java:jboss/jms/queue/ArticleSubmissions")
     private Queue articleSubmissionsQueue;
 
+    @Context
+    private Configuration configuration;
+
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response create(Article article) {
-        String articleJson = JsonbBuilder.create().toJson(article);
-        log.debugv("Received article:\n{0}", articleJson);
-        jmsContext.createProducer().send(articleSubmissionsQueue, articleJson);
-        return Response.accepted().build();
+        try {
+            String articleJson = JsonbBuilder.create().toJson(article);
+            log.debugv("Received article:\n{0}", articleJson);
+            MessageUtil msgUtil = new MessageUtil(getVersion(), jmsContext, articleSubmissionsQueue);
+            msgUtil.send(article);
+            return Response.accepted().build();
+        } catch (Exception e) {
+            log.error("Exception occured during article posting", e);
+            throw e;
+        }
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Article healthCheck() {
-        return new Article("Our dictator is awesome", "Yes, and let me add that he's awesome.");
+        return new Article("Dictator App version " + getVersion(), "Our dictator is awesome.");
     }
+
+    private String getVersion() {
+        return (String) configuration.getProperty("APP_VERSION");
+    }
+
 }

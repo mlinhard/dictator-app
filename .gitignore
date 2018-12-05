@@ -1,3 +1,5 @@
 docker/target
 local-*.sh
 local
+build.conf
+.project

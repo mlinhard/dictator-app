@@ -1,0 +1,65 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ${MQ_NAME}-${APP_VERSION}
+  labels:
+    app: ${MQ_NAME}
+    version: "${APP_VERSION}"
+spec:
+  template:
+    metadata:
+      labels:
+        app: ${MQ_NAME}
+        version: "${APP_VERSION}"
+    spec:
+      containers:
+        - name: ${MQ_NAME}
+          image: ${GCR_PREFIX}/dictator-activemq:${APP_VERSION}
+          ports:
+            - name: amq-admin
+              containerPort: 8161
+            - name: amq-openwire
+              containerPort: 61616
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8161
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8161
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 30
+            failureThreshold: 20 
+          env:
+            - name: JAVA_OPTS
+              value: "-Dbg.bridge.host=${MQ_NAME_OTHER} -Dbg.bridge.port=61616"
+            - name: ARTEMIS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: dictator-mq-credentials
+                  key: username
+            - name: ARTEMIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dictator-mq-credentials
+                  key: password
+            - name: ARTEMIS_MIN_MEMORY
+              value: "40M"
+            - name: ARTEMIS_MAX_MEMORY
+              value: "80M"
+          volumeMounts:
+            - name: ${MQ_NAME}-data
+              mountPath: /var/lib/artemis/data
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+      volumes:
+        - name: ${MQ_NAME}-data
+          persistentVolumeClaim:
+            claimName: ${MQ_NAME}-pvc
+

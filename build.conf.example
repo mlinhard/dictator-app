@@ -1,0 +1,6 @@
+APP_DOMAIN=example.com
+GOOGLE_PROJECT=project-id-9999
+GCR_PREFIX=eu.gcr.io/${GOOGLE_PROJECT}
+ARTEMIS_USERNAME=dictator
+ARTEMIS_PASSWORD=ourleader
+ARTEMIS_DATA_DIR=/tmp/artemis_data

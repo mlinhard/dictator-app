@@ -9,7 +9,6 @@ import javax.ejb.MessageDriven;
 import javax.inject.Inject;
 import javax.jms.JMSConnectionFactory;
 import javax.jms.JMSContext;
-import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.Queue;
@@ -21,6 +20,7 @@ import com.dnastack.dictator.data.CensoredArticle;
 import lombok.extern.jbosslog.JBossLog;
 
 @MessageDriven(name = "CensorshipService", activationConfig = {
+    @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "1"),
     @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "java:jboss/jms/queue/ArticleSubmissions"),
     @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
     @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge") })
@@ -28,6 +28,7 @@ import lombok.extern.jbosslog.JBossLog;
 public class CensorshipService implements MessageListener {
 
     protected Long censorshipDuration;
+    protected String appVersion;
 
     @Inject
     @JMSConnectionFactory("java:/jms/dictator-activemq")
@@ -40,7 +41,8 @@ public class CensorshipService implements MessageListener {
         log.debugv("Received message:\n{0}", messageJson);
         Article article = ArticleSerializer.deserialize(messageJson);
         CensoredArticle censoredArticle = censor(article);
-        jmsContext.createProducer().send(publishedArticlesQueue, ArticleSerializer.serialize(censoredArticle));
+        MessageUtil msgUtil = new MessageUtil(appVersion, jmsContext, publishedArticlesQueue);
+        msgUtil.send(censoredArticle);
     }
 
     protected CensoredArticle censor(Article article) {
@@ -66,18 +68,25 @@ public class CensorshipService implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
-        if (message instanceof TextMessage) {
-            try {
+        try {
+            log.infov("Received message version {0}", message.getStringProperty(DictatorApplication.VERSION_PROP));
+            if (message instanceof TextMessage) {
                 onMessage(((TextMessage) message).getText());
-            } catch (JMSException e) {
-                log.error("Error while receiving message", e);
+            } else {
+                log.warn("Ignoring non-TextMessage");
             }
+        } catch (Exception e) {
+            log.error("Error while receiving message", e);
         }
     }
 
     @PostConstruct
     public void initService() {
-        censorshipDuration = Long.parseLong(System.getenv("CENSORSHIP_DURATION"));
+        try {
+            censorshipDuration = Long.parseLong(System.getenv(DictatorApplication.CENSORSHIP_DURATION_PROP));
+            appVersion = System.getenv(DictatorApplication.VERSION_PROP);
+        } catch (Exception e) {
+            log.error("Error while initializing", e);
+        }
     }
-
 }
