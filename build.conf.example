@@ -4,3 +4,4 @@ GCR_PREFIX=eu.gcr.io/${GOOGLE_PROJECT}
 ARTEMIS_USERNAME=dictator
 ARTEMIS_PASSWORD=ourleader
 ARTEMIS_DATA_DIR=/tmp/artemis_data
+KUBECTL_CONTEXT_NAME=dictator

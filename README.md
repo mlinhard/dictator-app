@@ -30,13 +30,14 @@ Run `build-activemq.sh` to create a docker image `dictator-activemq:<version>`
 ### Running ActiveMQ server
 
 ```
-export ARTEMIS_DATA_DIR=/home/mlinhard/Downloads/artemis1
+export ARTEMIS_DATA_DIR=/tmp/artemis1
 bin/run-docker-mq.sh 61616 8161 5445 5672 1883 61613 172.17.0.3 61617
-export ARTEMIS_DATA_DIR=/home/mlinhard/Downloads/artemis2
+export ARTEMIS_DATA_DIR=/tmp/artemis2
 bin/run-docker-mq.sh 61617 8162 5446 5673 1884 61618 172.17.0.2 61616
 ```
 
-NOTE: assign target IPs based on your docker env
+- NOTE: Change `ARTEMIS_DATA_DIR` value for something that makes sense for your system.
+- NOTE: assign target IPs based on your docker env
 
 ### Running the app
 
@@ -45,7 +46,7 @@ bin/run-docker-app.sh 8080 172.17.0.2 61616
 bin/run-docker-app.sh 8081 172.17.0.3 61617
 ```
 
-NOTE: assign target IPs based on your docker env
+- NOTE: assign target IPs based on your docker env
 
 ## API Access
 
@@ -60,4 +61,33 @@ POST an article
 ```
 curl -d '{"title":"hello", "content":"a message"}' -H "Content-type: application/json" http://localhost:8080/api/news/article
 ```
+
+## Google Cluster Kubernetes setup
+
+1. Create a test cluster, either [manually](https://console.cloud.google.com/kubernetes/list?authuser=1&project=aqueous-charger-221113&template=standard-cluster) or using `gcloud` CLI, e.g:
+
+```
+gcloud container clusters create learning-cluster \
+    --num-nodes 4 \
+    --machine-type g1-small \
+    --zone europe-west1-c
+
+gcloud container clusters get-credentials learning-cluster
+```
+
+1. Copy `build.conf.example` to `build.conf` and fill in your values.
+
+1. Create Kubernetes objects
+
+```
+bin/kube-apply.sh
+```
+
+1. Manual: Change load-balancer IP to static and set your DNS so that the address e.g. `example.com` in `APP_DOMAIN` (in build.conf) points to it
+
+1. If your address is `example.com`, you should be able to access these services:
+- [dictator-app.example.com](http://dictator-app.example.com)
+- [dictator-mq-b.example.com](http://dictator-mq-b.example.com)
+- [dictator-mq-g.example.com](http://dictator-mq-g.example.com)
+
 

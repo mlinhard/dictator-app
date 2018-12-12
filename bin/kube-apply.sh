@@ -2,6 +2,18 @@
 
 source bin/commons.sh
 
+check_def ARTEMIS_USERNAME
+check_def ARTEMIS_PASSWORD
+check_def KUBECTL_CONTEXT_NAME
+
+kubectl apply -f kube/namespace.yml
+
+kubectl config set-context $KUBECTL_CONTEXT_NAME --namespace=dictator
+
+kubectl create secret generic dictator-mq-credentials \
+  --from-literal=username=$ARTEMIS_USERNAME \
+  --from-literal=password=$ARTEMIS_PASSWORD
+
 # reset possibly changed descriptors
 git checkout kube/*.yml
 
