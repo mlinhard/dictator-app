@@ -55,6 +55,6 @@ spec:
             - name: CENSORSHIP_DURATION
               value: "3000"
             - name: APP_VERSION
-              value: ${APP_VERSION}
+              value: "${APP_VERSION}"
             - name: JAVA_OPTS
               value: "-Xms64m -Xmx512m -XX:MetaspaceSize=64M -XX:MaxMetaspaceSize=128M -Djava.net.preferIPv4Stack=true -Djava.awt.headless=true -Dactivemq.artemis.client.global.thread.pool.max.size=16"
