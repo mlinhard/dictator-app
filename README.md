@@ -75,19 +75,85 @@ gcloud container clusters create learning-cluster \
 gcloud container clusters get-credentials learning-cluster
 ```
 
-1. Copy `build.conf.example` to `build.conf` and fill in your values.
+2. Copy `build.conf.example` to `build.conf` and fill in your values.
 
-1. Create Kubernetes objects
+3. Create Kubernetes objects
 
 ```
 bin/kube-apply.sh
 ```
 
-1. Manual: Change load-balancer IP to static and set your DNS so that the address e.g. `example.com` in `APP_DOMAIN` (in build.conf) points to it
+4. Manual: Change load-balancer IP to static and set your DNS so that the address e.g. `example.com` in `APP_DOMAIN` (in build.conf) points to it
 
-1. If your address is `example.com`, you should be able to access these services:
+5. If your address is `example.com`, you should be able to access these services:
 - [dictator-app.example.com](http://dictator-app.example.com)
 - [dictator-mq-b.example.com](http://dictator-mq-b.example.com)
 - [dictator-mq-g.example.com](http://dictator-mq-g.example.com)
+
+6. You can check status of your services using
+```
+bin/kube-info.sh
+```
+
+- NOTE: to run some of the scripts, you need to install [jq](https://stedolan.github.io/jq/) and [curl](https://curl.haxx.se/).
+
+## Blue/Green Deployment
+
+### 1 Initial state
+
+After deployment of the first version `1.0` you'll have the following scenario
+
+![Initial deployment](docs/img/dictator-deployment-normal.png)
+
+### 2 Candidate deployment
+
+Deploy candidate (version `2.0`). This can be done using the script
+```
+bin/kube-deploy-candidate.sh
+```
+You'll end up with something like this
+
+![Candidate deployed](docs/img/dictator-deployment-candidate.png)
+
+This creates a separate service `dictator-app-candidate` which you can run End-to-end tests against. This will be a new pod configured with completely separate MQ server `dictator-mq-g`
+
+### 3 Candidate promotion
+
+After you checked that the version `2.0` behaves correctly (with it's independent MQ `dictator-mq-g`), you can remove the old version and direct all of the production traffic to the new pod. 
+After this you'll also gracefully shutdown version `1.0` pod. This may leave some unprocessed messages in it's MQ server `dictator-mq-b`.
+
+![Candidate promoted](docs/img/dictator-deployment-promoted.png)
+
+You can promote candidate using
+
+```
+bin/kube-promote-candidate.sh
+```
+
+### 4 Handling unprocessed old messages
+
+The unprocessed messages can now be fed via bridge to the new active MQ server `dictator-mq-g`. There's **N-1 compatibility** between versions `1.0` and `2.0` messages, i.e. version `2.0` app 
+can process version `1.0` messages.
+
+![Bridging](docs/img/dictator-deployment-bridge.png)
+
+After all of the messages are transferred via the ActiveMQ [Core bridge](https://activemq.apache.org/artemis/docs/1.0.0/core-bridges.html), the bridge can be shut down.
+
+To create and destroy bridges, you can use these commands
+```
+bin/create-bridge.sh b
+bin/destroy-bridge.sh b
+```
+- NOTE: These will create and destroy bridge `dictator-mq-b` -> `dictator-mq-g`. Use letter `g` instead of `b` to create and destroy the opposite direction bridge.
+  These work with ActiveMQ Artemis Jolokia REST API.
+
+![All unprocessed messages transfered](docs/img/dictator-deployment-old-ver-depleted.png)
+
+### 5 Wait until old messages are processed
+
+Before we can switch roles of `dictator-mq-b` and `dictator-mq-g` and deploy another version, we need to wait until all of the `1.0` messages are processed, so that we don't need to maintain
+compatibility between another version and this one. You can check the status with `bin/check-queues.sh` command.
+
+![All old messages processed](docs/img/dictator-deployment-old-ver-processed.png)
 
 
