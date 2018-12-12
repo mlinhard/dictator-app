@@ -10,8 +10,11 @@ The app consists of three components
 - **NewsEndpoint** - REST Endpoint (`POST /api/news/article`) that receives new articles in format `{"title":"Something", "content":"Some content"}`
   and posts it to the `ArticleSubmissions` queue for further processing by `CensorshipService`.
 - **CensorshipService** - Processes the `ArticleSubmissions` queue, looks at the content of the articles and decides whether it will mark the
-  article as `OK` or `CENSORED` before it sends them to `PublishedArticles` queue.
-- **PublishingService** - Processes the `PublishedArticles` queue. It will log the article content to `STDOUT` only if it has been marked as `OK` by the censors.
+  article as `OK` or `CENSORED` before it sends them further.
+  - If article is `OK` it goes to to `PublishedArticles` queue.
+  - If article is `CENSORED` it goes to to `CensoredArticles` topic.
+- **PublishingService** - Processes the `PublishedArticles` queue and logs the article content to `STDOUT`
+- **PressMonitoringService** - Processes the `CensoredArticles` topic and logs the article title and censorship date to `STDOUT`
 
 ![docs/img/dictator-app.png|](docs/img/dictator-app.png)
 

@@ -400,6 +400,7 @@
                 user="${env.ACTIVEMQ_USER}" password="${env.ACTIVEMQ_PASSWORD}" max-pool-size="4" min-pool-size="2"/>
             <external-jms-queue name="ArticleSubmissions" entries="java:jboss/jms/queue/ArticleSubmissions"/>
             <external-jms-queue name="PublishedArticles" entries="java:jboss/jms/queue/PublishedArticles"/>
+            <external-jms-topic name="CensoredArticles" entries="java:jboss/jms/topic/CensoredArticles"/>
         </subsystem>
         <subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0"/>
         <subsystem xmlns="urn:wildfly:microprofile-health-smallrye:1.0" security-enabled="false"/>

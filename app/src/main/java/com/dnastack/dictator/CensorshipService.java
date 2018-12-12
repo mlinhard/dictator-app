@@ -1,5 +1,7 @@
 package com.dnastack.dictator;
 
+import static com.dnastack.dictator.MessageUtil.send;
+
 import java.time.LocalDate;
 
 import javax.annotation.PostConstruct;
@@ -9,10 +11,10 @@ import javax.ejb.MessageDriven;
 import javax.inject.Inject;
 import javax.jms.JMSConnectionFactory;
 import javax.jms.JMSContext;
-import javax.jms.Message;
-import javax.jms.MessageListener;
 import javax.jms.Queue;
-import javax.jms.TextMessage;
+import javax.jms.Topic;
+
+import org.jboss.logging.Logger;
 
 import com.dnastack.dictator.data.Article;
 import com.dnastack.dictator.data.CensoredArticle;
@@ -23,11 +25,11 @@ import lombok.extern.jbosslog.JBossLog;
     @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "1"),
     @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "java:jboss/jms/queue/ArticleSubmissions"),
     @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-    @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge") })
+    @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
+    @ActivationConfigProperty(propertyName = "clientId", propertyValue = "Censorship")})
 @JBossLog
-public class CensorshipService implements MessageListener {
+public class CensorshipService extends DelayedMessageListener {
 
-    protected Long censorshipDuration;
     protected String appVersion;
 
     @Inject
@@ -37,20 +39,21 @@ public class CensorshipService implements MessageListener {
     @Resource(lookup = "java:jboss/jms/queue/PublishedArticles")
     protected Queue publishedArticlesQueue;
 
+    @Resource(lookup = "java:jboss/jms/topic/CensoredArticles")
+    protected Topic censoredArticlesTopic;
+
     protected void onMessage(String messageJson) {
-        log.debugv("Received message:\n{0}", messageJson);
+        log.infov("Processing message version {0}", appVersion);
         Article article = ArticleSerializer.deserialize(messageJson);
         CensoredArticle censoredArticle = censor(article);
-        MessageUtil msgUtil = new MessageUtil(appVersion, jmsContext, publishedArticlesQueue);
-        msgUtil.send(censoredArticle);
+        if ("OK".equals(censoredArticle.getCheckResult())) {
+            send(jmsContext, publishedArticlesQueue, appVersion, censoredArticle);
+        } else {
+            send(jmsContext, censoredArticlesTopic, appVersion, censoredArticle);
+        }
     }
 
     protected CensoredArticle censor(Article article) {
-        try {
-            Thread.sleep(censorshipDuration);
-        } catch (InterruptedException e) {
-            log.error("Censor interrupted in sleep", e);
-        }
         return new CensoredArticle(
                 article.getTitle(),
                 article.getContent(),
@@ -67,23 +70,18 @@ public class CensorshipService implements MessageListener {
     }
 
     @Override
-    public void onMessage(Message message) {
-        try {
-            log.infov("Received message version {0}", message.getStringProperty(DictatorApplication.VERSION_PROP));
-            if (message instanceof TextMessage) {
-                onMessage(((TextMessage) message).getText());
-            } else {
-                log.warn("Ignoring non-TextMessage");
-            }
-        } catch (Exception e) {
-            log.error("Error while receiving message", e);
-        }
+    protected Logger getLog() {
+        return log;
+    }
+
+    @Override
+    protected Long getDelay() {
+        return Long.parseLong(System.getenv(DictatorApplication.CENSORSHIP_DURATION_PROP));
     }
 
     @PostConstruct
     public void initService() {
         try {
-            censorshipDuration = Long.parseLong(System.getenv(DictatorApplication.CENSORSHIP_DURATION_PROP));
             appVersion = System.getenv(DictatorApplication.VERSION_PROP);
         } catch (Exception e) {
             log.error("Error while initializing", e);

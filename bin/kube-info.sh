@@ -27,21 +27,6 @@ MQ_G_REST=http://$MQ_G.$APP_DOMAIN/console/jolokia
 MQ_B_CONN_TO=`curl -s -u "$ARTEMIS_USERNAME:$ARTEMIS_PASSWORD" "$MQ_B_REST/read/org.apache.activemq.artemis:broker=%22$MQ_B_POD%22/Connectors" | jq '.value[0][2].host' -r`
 MQ_G_CONN_TO=`curl -s -u "$ARTEMIS_USERNAME:$ARTEMIS_PASSWORD" "$MQ_G_REST/read/org.apache.activemq.artemis:broker=%22$MQ_G_POD%22/Connectors" | jq '.value[0][2].host' -r`
 
-BridgeName="blue-green-bridge-ArticleSubmissions"
-BridgeStatus=`curl -s -u "$ARTEMIS_USERNAME:$ARTEMIS_PASSWORD" "$MQ_B_REST/read/org.apache.activemq.artemis:broker=%22$MQ_B_POD%22,component=bridges,name=%22$BridgeName%22/Name" | jq '.status'`
-if [ "$BridgeStatus" == "200" ]; then
-    MQ_B_BRIDGE_STATUS="\e[1m\e[33mENABLED\e[0m"
-else
-    MQ_B_BRIDGE_STATUS="DISABLED"
-fi
-BridgeStatus=`curl -s -u "$ARTEMIS_USERNAME:$ARTEMIS_PASSWORD" "$MQ_G_REST/read/org.apache.activemq.artemis:broker=%22$MQ_G_POD%22,component=bridges,name=%22$BridgeName%22/Name" | jq '.status'`
-if [ "$BridgeStatus" == "200" ]; then
-    MQ_G_BRIDGE_STATUS="\e[1m\e[33mENABLED\e[0m"
-else
-    MQ_G_BRIDGE_STATUS="DISABLED"
-fi
-
-
 echo "--------------------------------------"
 echo -e "\e[1mProduction\e[0m:"
 echo "    Pod: $OLD_APP_POD_NAME"
@@ -55,14 +40,3 @@ if [ "$OLD_VERSION" != "$NEW_VERSION" ]; then
     echo "     MQ: $NEW_POD_MQ"
     echo "--------------------------------------"
 fi
-echo -e "\e[34mBlue MQ\e[0m:"
-echo "   Name: $MQ_B"
-echo "    Pod: $MQ_B_POD"
-echo -e " Bridge: $MQ_B -> $MQ_B_CONN_TO [$MQ_B_BRIDGE_STATUS]"
-echo "--------------------------------------"
-echo -e "\e[32mGreen MQ\e[0m:"
-echo "   Name: $MQ_G"
-echo "    Pod: $MQ_G_POD"
-echo -e " Bridge: $MQ_G -> $MQ_G_CONN_TO [$MQ_G_BRIDGE_STATUS]"
-echo "--------------------------------------"
-

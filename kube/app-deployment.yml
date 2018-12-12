@@ -53,7 +53,11 @@ spec:
             - name: ACTIVEMQ_PORT
               value: "61616"
             - name: CENSORSHIP_DURATION
-              value: "3000"
+              value: "0"
+            - name: PUBLISHING_DURATION
+              value: "0"
+            - name: MONITORING_DURATION
+              value: "0"
             - name: APP_VERSION
               value: "${APP_VERSION}"
             - name: JAVA_OPTS

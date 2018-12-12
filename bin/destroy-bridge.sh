@@ -41,5 +41,6 @@ destroy_bridge_for_queue() {
 
 destroy_bridge_for_queue "ArticleSubmissions"
 destroy_bridge_for_queue "PublishedArticles"
+destroy_bridge_for_queue "CensoredArticles"
 
 

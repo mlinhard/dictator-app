@@ -1,5 +1,7 @@
 package com.dnastack.dictator;
 
+import static com.dnastack.dictator.MessageUtil.send;
+
 import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.jms.JMSConnectionFactory;
@@ -41,8 +43,7 @@ public class NewsEndpoint {
         try {
             String articleJson = JsonbBuilder.create().toJson(article);
             log.debugv("Received article:\n{0}", articleJson);
-            MessageUtil msgUtil = new MessageUtil(getVersion(), jmsContext, articleSubmissionsQueue);
-            msgUtil.send(article);
+            send(jmsContext, articleSubmissionsQueue, getVersion(), article);
             return Response.accepted().build();
         } catch (Exception e) {
             log.error("Exception occured during article posting", e);

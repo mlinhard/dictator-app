@@ -19,6 +19,7 @@
     <jms xmlns="urn:activemq:jms">
         <queue name="jms.queue.ArticleSubmissions" />
         <queue name="jms.queue.PublishedArticles" />
+        <topic name="jms.topic.CensoredArticles" />
     </jms>
 
 </configuration>

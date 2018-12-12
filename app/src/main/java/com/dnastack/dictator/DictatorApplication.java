@@ -14,12 +14,16 @@ public class DictatorApplication extends Application {
 
     public static final String VERSION_PROP = "APP_VERSION";
     public static final String CENSORSHIP_DURATION_PROP = "CENSORSHIP_DURATION";
+    public static final String PUBLISHING_DURATION_PROP = "PUBLISHING_DURATION";
+    public static final String MONITORING_DURATION_PROP = "MONITORING_DURATION";
 
     @Override
     public Map<String, Object> getProperties() {
         Map<String, Object> props = new HashMap<>(super.getProperties());
         props.put(VERSION_PROP, System.getenv(VERSION_PROP));
         props.put(CENSORSHIP_DURATION_PROP, Long.parseLong(System.getenv(CENSORSHIP_DURATION_PROP)));
+        props.put(PUBLISHING_DURATION_PROP, Long.parseLong(System.getenv(PUBLISHING_DURATION_PROP)));
+        props.put(MONITORING_DURATION_PROP, Long.parseLong(System.getenv(MONITORING_DURATION_PROP)));
         log.infov("Initialized version {0}", props.get(VERSION_PROP));
         return props;
     }

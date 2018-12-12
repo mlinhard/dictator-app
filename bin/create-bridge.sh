@@ -19,8 +19,8 @@ MQ_POD=`get_pod_name "$MQ" "-"`
 MQ_REST=http://$MQ.$APP_DOMAIN/console/jolokia
 
 create_bridge_for_queue() {
-    BRIDGE_NAME="\"blue-green-bridge-$1\""
-    BRIDGE_QUEUE="\"jms.queue.$1\""
+    BRIDGE_NAME="\"$2\""
+    BRIDGE_QUEUE="\"$1\""
     BRIDGE_FORWARDING_ADDRESS=null
     BRIDGE_FILTER_STRING=null
     BRIDGE_TRANSFORMER_CLASS=null
@@ -75,7 +75,8 @@ create_bridge_for_queue() {
     fi
 }
 
-create_bridge_for_queue "ArticleSubmissions"
-create_bridge_for_queue "PublishedArticles"
+create_bridge_for_queue "jms.queue.ArticleSubmissions" "blue-green-bridge-ArticleSubmissions"
+create_bridge_for_queue "jms.queue.PublishedArticles" "blue-green-bridge-PublishedArticles"
+create_bridge_for_queue "PressMonitoring.PressMonitoringSub" "blue-green-bridge-CensoredArticles"
 
 
