@@ -99,7 +99,7 @@ curl -d '{"title":"hello", "content":"a message"}' -H "Content-type: application
 - `bin/run-docker-mq.sh` - Runs current tag of MQ server in local docker
 - `bin/post.sh` - Posts new article to the app via it's REST API
   - USAGE:
-    - `bin/post.sh "Article TITLE" "Article CONTENT`
+    - `bin/post.sh "Article TITLE" "Article CONTENT"`
     - NOTE: if article content contains string `dictator is corrupt` then it will be censored
     - NOTE: if article content equals `candidate` then it's posted to `dictator-app-candidate` endpoint instead of `dictator-app`
     - NOTE: if article content equals `loop` then it will be reposted every second until the script is killed
@@ -243,7 +243,46 @@ bin/check-queues.sh
 
 ### Update MQ server
 
-TODO
+When you need to update the MQ server, you usually want to do something like
+
+- update the ActiveMQ Artemis version
+- change ActiveMQ configuration
+- add a topic or a queue
+- remove a topic or a queue
+
+You start in a state where you have a running app using the **ACTIVE** (blue or green) MQ server.
+To ensure an uninterrupted traffic, you simply update the **INACTIVE** MQ server.
+
+```
+# To find out which MQ is used by active app:
+bin/kube-info.sh
+
+# Now just replace the inactive MQ server with newer version
+bin/update-mq.sh
+```
+In your next B/G deployment cycle you'll start using this server, so make sure your new App version is compatible with the configuration. 
+
+#### Removing a queue/topic
+
+Your **N+1** version needs to process/discard messages that were sent to it by the old version. 
+
+The old bridging scripts will still create bridge for the old queues
+After migration you can also remove the queue from scripts that create bridges.
+
+#### Adding a queue/topic
+
+The old version will not produce any data to this new queue, so no special action needed here.
+Add the queue to the list of bridges in create-bridge scripts.
+
+#### Renaming a queue/topic
+
+This can be handled by bridges, configure them to forward to a newly named address
+
+
+
+
+
+
 
 
 
