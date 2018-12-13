@@ -22,13 +22,13 @@ The app consists of three components
 
 ### Building the app
 
-Run `build.sh` to create a docker image `dictator-app:<version>`.
+Run `bin/build-docker-app.sh` to create a docker image `dictator-app:<version>`.
 
 ### Building the ActiveMQ server
 
-Run `build-activemq.sh` to create a docker image `dictator-activemq:<version>`
+Run `bin/build-docker-mq.sh` to create a docker image `dictator-activemq:<version>`
 
-## Running
+## Running locally
 
 ### Running ActiveMQ server
 
@@ -64,6 +64,46 @@ POST an article
 ```
 curl -d '{"title":"hello", "content":"a message"}' -H "Content-type: application/json" http://localhost:8080/api/news/article
 ```
+
+## Command-line tools
+
+- `bin/logs.sh` - Show logs of
+  - **a**pp
+  - **c**andidate app
+  - **b**lue MQ
+  - **g**reen MQ
+- `bin/check-queues.sh` - Show message counts in queues and topics
+- `bin/check-bridges.sh` - Show bridges and their states
+- `bin/create-bridge.sh` - Create bridges for all of the queues/topics in 
+  - **b**lue MQ
+  - **g**reen MQ
+- `bin/destroy-bridge.sh` - Create bridges for all of the queues/topics in 
+  - **b**lue MQ
+  - **g**reen MQ
+- `bin/kube-apply.sh` - Initial deployment of Kubernetes objects to Google Cloud
+- `bin/kube-deploy-candidate.sh` - Deploy currently checked out app version (make sure you've built it)
+- `bin/kube-promote-candidate.sh` - Switch `dictator-app` service to new version and delete deployment of old version 
+- `bin/kube-info.sh`- Print which MQ server is configured with current deployment
+- `bin/kube-port-forward.sh` - Port-forward to localhost
+  - **b**lue MQ
+  - **g**reen MQ
+- `bin/mq-admin.sh` - Run Java MQ Admin (the tool must be built with `bin/build-admin.sh`)
+- `bin/build-admin.sh` - Builds the Java MQ Admin tool (basically not needed)
+- `bin/pause.sh` - Pause/resume processing of these addressess: *submitted*,*published* and *censored*
+  - USAGE:
+    - `bin/pause.sh {b|g} {submitted|published|censored} {p|r}` - **p**ause/**r**esume given address, in **b**lue or **g**reen MQ
+    - `bin/pause.sh {b|g}` - Show paused status in given MQ
+- `bin/build-docker-app.sh` - Maven build the app, create docker image and push it into the GCR repository, uses current git tag
+- `bin/build-docker-mq.sh` - Create Artemis ActiveMQ docker image and push it into the GCR repository, uses current git tag
+- `bin/run-docker-app.sh` - Runs current tag of app in local docker
+- `bin/run-docker-mq.sh` - Runs current tag of MQ server in local docker
+- `bin/post.sh` - Posts new article to the app via it's REST API
+  - USAGE:
+    - `bin/post.sh "Article TITLE" "Article CONTENT`
+    - NOTE: if article content contains string `dictator is corrupt` then it will be censored
+    - NOTE: if article content equals `candidate` then it's posted to `dictator-app-candidate` endpoint instead of `dictator-app`
+    - NOTE: if article content equals `loop` then it will be reposted every second until the script is killed
+
 
 ## Google Cluster Kubernetes setup
 
@@ -158,5 +198,52 @@ Before we can switch roles of `dictator-mq-b` and `dictator-mq-g` and deploy ano
 compatibility between another version and this one. You can check the status with `bin/check-queues.sh` command.
 
 ![All old messages processed](docs/img/dictator-deployment-old-ver-processed.png)
+
+## Command-line tools
+
+- `bin/logs.sh` - Show logs of
+  - **a**pp
+  - **c**andidate app
+  - **b**lue MQ
+  - **g**reen MQ
+- `bin/check-queues` - Show message counts in queues and topics
+- `
+
+## Use cases
+
+### Update application
+
+```
+git tag <new_version>
+
+# This will create new pod and point dictator-app-candidate service to it:
+bin/kube-deploy-candidate.sh
+
+# Run e2e tests: this posts to the candidate URL:
+bin/post.sh test candidate
+
+# After you're done with test, promote the candidate, this will delete the old version
+bin/kube-promote-candidate.sh
+
+# To find out which MQ is used by active app:
+bin/kube-info.sh
+
+# Create bridge on the mq that is now NOT active, so that it pushes messages to the active one
+bin/create-bridge.sh <mq>
+
+# To check the message transfer progress
+bin/check-queues.sh
+
+# Then destroy the bridge
+bin/destroy-bridge.sh <mq>
+
+# Now check how your active app deals with the old messages and when they're consumed, you ready to repeat the cycle
+bin/check-queues.sh
+```
+
+### Update MQ server
+
+TODO
+
 
 
