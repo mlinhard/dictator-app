@@ -295,6 +295,19 @@ Add the queue to the list of bridges in create-bridge scripts.
 This can be handled by bridges, configure them to forward to a newly named address
 
 
+### Changing the message serialization format
+
+When you're changing format of message serialization, you need to respect **N-1 compatibility** between versions, i.e. the new version must be able to process messages of old version.
+
+Let's explain the problem on the example of JSON object serialization format used in our application.
+
+#### Add field
+
+When you add a field, you must be prepared that the old version won't fill it and you need to expect `null` value even when your new code fills it everywhere.
+
+#### Remove field
+
+When you remove a field, you need to make sure that the old version doesn't send any important data to it, because it will be ignored when serialized to your new object that doesn't declare it.
 
 
 
