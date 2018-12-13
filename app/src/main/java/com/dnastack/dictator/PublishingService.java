@@ -19,9 +19,16 @@ import lombok.extern.jbosslog.JBossLog;
 public class PublishingService extends DelayedMessageListener {
 
     protected void publish(CensoredArticle article) {
-        log.infov("Publishing article \"{0}\"\n{1}",
-                article.getTitle(),
-                article.getContent());
+        if (article.getDatePosted() == null) {
+            log.infov("Publishing article \"{0}\" with UNKNOWN date\n{1}",
+                    article.getTitle(),
+                    article.getContent());
+        } else {
+            log.infov("Publishing article \"{0}\" from {2}\n{1}",
+                    article.getTitle(),
+                    article.getContent(),
+                    article.getDatePosted());
+        }
     }
 
     @Override

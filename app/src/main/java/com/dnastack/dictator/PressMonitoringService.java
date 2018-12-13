@@ -22,9 +22,17 @@ public class PressMonitoringService extends DelayedMessageListener {
 
     protected void onMessage(String messageJson) {
         CensoredArticle article = ArticleSerializer.deserializeCensored(messageJson);
-        log.infov("Censored article \"{0}\"\nCensored at {1}",
-                article.getTitle(),
-                article.getCheckedAt());
+        if (article.getDatePosted() == null) {
+            log.infov("Censored article \"{0}\"\nCensored at {1}\nPosted at UNKNOWN date",
+                    article.getTitle(),
+                    article.getCheckedAt(),
+                    article.getDatePosted());
+        } else {
+            log.infov("Censored article \"{0}\"\nCensored at {1}\nPosted at {2}",
+                    article.getTitle(),
+                    article.getCheckedAt(),
+                    article.getDatePosted());
+        }
     }
 
     @Override

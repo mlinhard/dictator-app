@@ -14,8 +14,8 @@ public class CensoredArticle extends Article {
     private LocalDate checkedAt;
     private String checkResult;
 
-    public CensoredArticle(String title, String content, LocalDate checkedAt, String checkResult) {
-        super(title, content);
+    public CensoredArticle(String title, String content, LocalDate datePosted, LocalDate checkedAt, String checkResult) {
+        super(title, content, datePosted);
         this.checkedAt = checkedAt;
         this.checkResult = checkResult;
     }

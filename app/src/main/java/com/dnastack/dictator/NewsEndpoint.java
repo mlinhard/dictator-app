@@ -2,6 +2,8 @@ package com.dnastack.dictator;
 
 import static com.dnastack.dictator.MessageUtil.send;
 
+import java.time.LocalDate;
+
 import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.jms.JMSConnectionFactory;
@@ -43,6 +45,9 @@ public class NewsEndpoint {
         try {
             String articleJson = JsonbBuilder.create().toJson(article);
             log.debugv("Received article:\n{0}", articleJson);
+            if (article.getDatePosted() == null) {
+                article.setDatePosted(LocalDate.now());
+            }
             send(jmsContext, articleSubmissionsQueue, getVersion(), article);
             return Response.accepted().build();
         } catch (Exception e) {
@@ -54,7 +59,7 @@ public class NewsEndpoint {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Article healthCheck() {
-        return new Article("Dictator App version " + getVersion(), "Our dictator is awesome.");
+        return new Article("Dictator App version " + getVersion(), "Our dictator is awesome.", null);
     }
 
     private String getVersion() {

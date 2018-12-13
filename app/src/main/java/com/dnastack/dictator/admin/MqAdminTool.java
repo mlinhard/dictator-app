@@ -2,6 +2,8 @@ package com.dnastack.dictator.admin;
 
 import static java.lang.String.format;
 
+import java.time.LocalDate;
+
 import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.MessageProducer;
@@ -49,7 +51,7 @@ public class MqAdminTool {
     }
 
     public void sendArticleViaJms(String title, String content) throws JMSException {
-        Article article = new Article(title, content);
+        Article article = new Article(title, content, LocalDate.now());
         try (
                 ActiveMQConnectionFactory f = new ActiveMQConnectionFactory(format("tcp://%s:%d", activeMqHost, activeMqPort));
                 Connection connection = f.createConnection(activeMqUser, activeMqPass);

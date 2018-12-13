@@ -11,7 +11,7 @@ public class ArticleSerializationTest {
 
     @Test
     public void testArticleSerialization() {
-        Article article = new Article("We should rise", "Revolution is inevitable.");
+        Article article = new Article("We should rise", "Revolution is inevitable.", LocalDate.now());
         String articleJson = ArticleSerializer.serialize(article);
         Article article2 = ArticleSerializer.deserialize(articleJson);
         Assert.assertEquals(article.getTitle(), article2.getTitle());
@@ -21,7 +21,7 @@ public class ArticleSerializationTest {
     @Test
     public void testCensoredArticleSerialization() {
         LocalDate now = LocalDate.now();
-        CensoredArticle article = new CensoredArticle("We should rise", "Revolution is inevitable.", now, "CENSORED");
+        CensoredArticle article = new CensoredArticle("We should rise", "Revolution is inevitable.", now, now, "CENSORED");
         String articleJson = ArticleSerializer.serialize(article);
         CensoredArticle article2 = ArticleSerializer.deserializeCensored(articleJson);
         Assert.assertEquals(article.getTitle(), article2.getTitle());

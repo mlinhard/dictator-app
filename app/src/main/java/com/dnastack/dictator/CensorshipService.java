@@ -26,7 +26,7 @@ import lombok.extern.jbosslog.JBossLog;
     @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "java:jboss/jms/queue/ArticleSubmissions"),
     @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
     @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
-    @ActivationConfigProperty(propertyName = "clientId", propertyValue = "Censorship")})
+    @ActivationConfigProperty(propertyName = "clientId", propertyValue = "Censorship") })
 @JBossLog
 public class CensorshipService extends DelayedMessageListener {
 
@@ -57,6 +57,7 @@ public class CensorshipService extends DelayedMessageListener {
         return new CensoredArticle(
                 article.getTitle(),
                 article.getContent(),
+                article.getDatePosted(),
                 LocalDate.now(),
                 censorContent(article.getContent()));
     }
