@@ -222,20 +222,36 @@ bin/kube-deploy-candidate.sh
 # Run e2e tests: this posts to the candidate URL:
 bin/post.sh test candidate
 
+# <<OPTIONAL>> Pause production traffic to get some messages that will need to migrate and be processed by new version
+bin/pause.sh <active-mq> published p
+bin/pause.sh <active-mq> censored p
+bin/post.sh test1 "safe content"
+bin/post.sh test2 "safe content"
+bin/post.sh test3 "safe content"
+bin/post.sh test1 "dictator is corrupt"
+bin/post.sh test2 "dictator is corrupt"
+bin/post.sh test3 "dictator is corrupt"
+# <<OPTIONAL>>
+
 # After you're done with test, promote the candidate, this will delete the old version
 bin/kube-promote-candidate.sh
+
+# <<OPTIONAL>> Now resume the traffic in the now inactive mq
+bin/pause.sh <inactive-mq> published r
+bin/pause.sh <inactive-mq> censored r
+# <<OPTIONAL>>
 
 # To find out which MQ is used by active app:
 bin/kube-info.sh
 
 # Create bridge on the mq that is now NOT active, so that it pushes messages to the active one
-bin/create-bridge.sh <mq>
+bin/create-bridge.sh <inactive-mq>
 
 # To check the message transfer progress
 bin/check-queues.sh
 
 # Then destroy the bridge
-bin/destroy-bridge.sh <mq>
+bin/destroy-bridge.sh <inactive-mq>
 
 # Now check how your active app deals with the old messages and when they're consumed, you ready to repeat the cycle
 bin/check-queues.sh
